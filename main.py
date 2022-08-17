@@ -7,6 +7,7 @@ vid = cv.VideoCapture(0)
 right = cv.CascadeClassifier("template.xml")
 
 template = cv.imread("./maos_reconheciveis/mao 1.png",0)
+th,tw,*_ = template.shape
 
 max_value = 255
 max_type = 4
@@ -49,28 +50,32 @@ def detectAndDisplay(frame):
     # cv.rectangle(img,(384,0),(510,128),(0,255,0),3)
     
     if righthand == ():
-      print("RightHand not available")
+      # print("RightHand not available")
+      x = 0
     else:
       global threshold_type 
       global threshold_value
       
       for(x,y,w,h) in righthand:
         # cv.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),3)
-        cropimage = frame_gray[y:y+h,x:x+w]
+        cropimage = frame_gray[y:y+th,x:x+tw]
         # frame_HSV = cv.cvtColor(cropimage, cv.COLOR_BGR2HSV)
         # frame_threshold = cv.inRange(frame_HSV, (low_H, low_S, low_V), (high_H, high_S, high_V))
    
         _, dst = cv.threshold(cropimage, threshold_value, max_binary_value, threshold_type )
         
+        # test = cv.Canny(cropimage,150,180)
         handChecker(dst)
         cv.imshow("hand",dst)
         cv.resizeWindow("hand",200,400)
     
   
 def handChecker(frame):
-  result = cv.matchTemplate(frame,template,cv.TM_CCOEFF)
-  
-  print(result)
+  result = cv.matchTemplate(frame,template,cv.TM_CCORR_NORMED)
+  cv.imshow("calc", result)
+  if(result[0][0] > 0.5):
+      print(result[0])
+
   
 cv.createTrackbar(trackbar_type, window_name , 3, max_type,Threshold_Demo)
 cv.createTrackbar(trackbar_value, window_name , 1, max_value,Threshold_Demo)
